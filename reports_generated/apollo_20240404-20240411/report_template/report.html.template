@@ -1,0 +1,273 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href="report.css" rel="stylesheet">
+    <title>{{ customer_name }} - Executive Report</title>
+    <meta name="description" content="Report example">
+  </head>
+
+  <body>
+    <article id="cover">
+      <h1>{{ customer_name }}</h1>
+      <h2>Executive Report</h2>
+      <hr/>
+      <coverdetaildisplay>
+        <addressdisplay>
+          <div><b><a href="https://stellarcyber.ai">stellarcyber.ai</a></b></div>
+          <div>Stellar Cyber Headquarters</div>
+          <div>4701 Patrick Henry Drive, Building 12</div>
+          <div>Santa Clara, CA 95054</div>
+        </addressdisplay>
+        <periodrange>
+          <div><b>Report prepared for period:</b></div>
+          <div>{{ start_date }} - {{ end_date }}</div>
+        </periodrange>
+      </coverdetaildisplay>
+    </article>
+
+    <article id="deployment">
+      <h2 id="columns-title">Deployment Summary</h2>
+
+      <section>
+        <p>
+          The following summary captures high level statistics for the
+          deployment over the specified time period.
+        </p>
+      </section>
+
+      <section>
+        <h3>Detections</h3>
+        <statrow>
+          <stat>
+            <h3>{{ critical_incident_count }}</h3>
+            <p>Critical Incidents Detected</p>
+          </stat>
+          <stat>
+            <h3>{{ critical_alert_count }}</h3>
+            <p>Critical Alerts Detected</p>
+          </stat>
+          <stat>
+            <h3>{{ distinct_alert_types }}</h3>
+            <p>Distinct Alert Types Triggered</p>
+          </stat>
+        </statrow>
+      </section>
+
+      <section>
+        <h3>Visibility</h3>
+        <statrow>
+          <stat>
+            <h3>{{ average_daily_volume }}</h3>
+            <p>Average Daily Data Volume</p>
+          </stat>
+          <stat>
+            <h3>{{ average_daily_assets }}</h3>
+            <p>Average Daily Discovered Assets</p>
+          </stat>
+          <stat>
+            <h3>{{ distinct_data_sources }}</h3>
+            <p>Distinct Data Sources</p>
+          </stat>
+        </statrow>
+        <statrow>
+          <stat>
+            <h3>{{ unique_security_sensor_count }}</h3>
+            <p>Security Sensors Deployed</p>
+          </stat>
+          <stat>
+            <h3>{{ unique_windows_sensor_count }}</h3>
+            <p>Windows Sensors Deployed</p>
+          </stat>
+          <stat>
+            <h3>{{ unique_linux_sensor_count }}</h3>
+            <p>Linux Sensors Deployed</p>
+          </stat>
+        </statrow>
+      </section>
+
+    </article>
+
+    <article id="incidents">
+      <h2 id="columns-title">Incidents</h2>
+
+      <section>
+        <p>
+          An Incident is a single attack story, correlating multiple likely
+          related alerts and observables together from every data source. Stellar Cyber uses Machine
+          Learning to perform correlation and security analysts can further edit
+          or build custom Incidents. A Critical Incident represents very high
+          risk connected behaviors and is defined as a risk score >= 75 in Stellar Cyber.
+        </p>
+      </section>
+
+      <section>
+        <h3>Critical Incidents Over Time</h3>
+        <img src="plots/incident_line_graph.svg">
+      </section>
+
+      <section>
+        <h3>Top 3 Incidents By Risk Score</h3>
+        <table class="styled-table">
+          <thead>
+              <tr>
+                  <th>Title</th>
+                  <th>Start</th>
+                  <th style="width: 40px;">Score</th>
+                  <th style="width: 300px;">Description</th>
+              </tr>
+          </thead>
+          <tbody>
+            {% for i in top_incidents %}
+            <tr>
+              <td>{{ i["name"] }}</td>
+              <td>{{ i["created_at"] }}</td>
+              <td style="width: 40px;">{{ i["incident_score"] }}</td>
+              <td style="width: 300px;">{{ i["description"] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+    </article>
+
+    <article id="alerts">
+      <h2 id="columns-title">Alerts</h2>
+
+      <section>
+        <p>
+          Alerts detected in Stellar Cyber are derived from a combination of raw
+          telemetry and Third Party Native Alerts. Alerts are generated via
+          Machine Learning and rules. All Alerts are mapped to the XDR Killchain
+          which is a superset of MITRE ATT&CK. A Critical Alert represents a
+          very high risk individual behavior and is defined as a risk score >= 75 in Stellar Cyber.
+          A High Fidelity Alert represents high confidence that certain behavior
+          happened, is defined as fidelity >= 75 in Stellar Cyber, and is an input
+          to the overall risk score.
+
+        </p>
+      </section>
+
+      <section>
+        <h3>Alerts Over Time</h3>
+        <img src="plots/alert_line_graph.svg">
+      </section>
+
+      <section>
+        <img src="plots/stage_heatmap.svg">
+      </section>
+
+      <section>
+        <img src="plots/tactic_heatmap.svg">
+      </section>
+
+      <section>
+        <h3>High Fidelity Alerts Source Map</h3>
+        <p>
+          This map shows the geocoded source (typically from an IP address)
+          involved with all High Fidelity Alerts. Not all Alerts will have geocodable
+          elements, so this map is not exhaustive of all Alerts.
+        </p>
+        <img src="plots/alert_map.svg">
+      </section>
+
+      <section>
+        <h3>Top 3 Alerts By Risk Score</h3>
+        <table class="styled-table">
+          <thead>
+              <tr>
+                  <th>Title</th>
+                  <th style="width: 60px;">Datetime</th>
+                  <th style="width: 40px;">Score</th>
+                  <th>Kill Chain Mapping</th>
+                  <th style="width: 200px;">Description</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for a in top_alerts %}
+              <tr>
+                  <td>{{ a["xdr_event.display_name"] }}</td>
+                  <td style="width: 60px;">{{ a["datetime"] }}</td>
+                  <td style="width: 40px;">{{ a["event_score"] }}</td>
+                  <td>{{ a["killchain_overview_print"] }}</td>
+                  <td style="width: 200px;">{{ a["xdr_event.description"] }}</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+    </article>
+
+    <article id="assets">
+      <h2 id="columns-title">Assets</h2>
+
+      <section>
+        <p>
+          Assets are continuously discovered and resolved across every data source
+          in Stellar Cyber. Vulnerabilities, alerts, and other activity are
+          used together to produce a risk score for providing context in investigations.
+        </p>
+      </section>
+
+      <section>
+        <h3>Top 5 Assets By Risk Score</h3>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th style="width: 40px;">Risk Score</th>
+              <th>Location</th>
+              <th>IPs</th>
+              <th style="width: 120px;">Data Sources</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in top_assets %}
+            <tr>
+              <td>{{ a["name"] }}</td>
+              <td style="width: 40px;">{{ a["risk_score"] }}</td>
+              <td>{{ a["location"] }}</td>
+              <td>{{ a["ips"] }}</td>
+              <td style="width: 120px;">{{ a["data_sources"] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+    </article>
+
+    <article id="visibility">
+      <h2 id="columns-title">Visibility</h2>
+
+      <section>
+        <p>
+          Stellar Cyber collects data from its own Sensors and Third Party Tools.
+          The following charts use the following categories - Sensors are defined as data generated from Stellar Cyber
+          Sensors, NOT including Third Party Log Sources. Connectors are defined as
+          Third Party Tools collected via API Connectors. Log Sources are defined as Third Party Tools
+          collected via streaming logs.
+        </p>
+      </section>
+
+      <section>
+        <h3>Visibility Over Time</h3>
+        <img src="plots/volume_assets_line_graph.svg">
+        <img src="plots/volume_category_trends.svg">
+      </section>
+
+      <section>
+        <h3>Top 10 Data Sources By Cumulative Volume</h3>
+        <img src="plots/top_data_sources_volume.svg">
+      </section>
+
+      <section>
+        <h3>Top 20 Data Sources By Cumulative Volume</h3>
+        <img src="plots/all_data_sources_volume_sankey.svg">
+      </section>
+
+    </article>
+
+  </body>
+</html>

@@ -1,0 +1,8 @@
+.streamlit/
+.vscode/
+logs/
+.saved
+.stats
+.requests_cache.sqlite
+.DS_Store
+__pycache__
