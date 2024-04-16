@@ -24,7 +24,7 @@ class StellarCyberPlots():
     def save_figures(self, dst_folder):
         os.makedirs(dst_folder, exist_ok=True)
         for figure_name, figure in self.figures.items():
-          figure.write_image(f"{dst_folder}/{figure_name}.svg")
+          figure.write_image(f"{os.path.join(dst_folder, figure_name)}.svg")
 
     def get_figure(self, fig_name):
       sc_stats = self.sc_stats
