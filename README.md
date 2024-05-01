@@ -31,3 +31,9 @@ This is a Python Streamlit app using the Stellar Cyber Public API to generate ex
 1. Run the app: `streamlit run app.py`
 2. Follow the instructions on the app to use it.
 3. To stop the app: `CTRL-C`
+
+## Customization
+
+The `report_template` directory contains:
+- `report-cover.jpg` -- image file used for the report cover. Replace this file with your own image/logo to customize the cover page of the report pdf.
+- `report.html.template` -- HTML template file for the report. Copy/paste into a new .template file in the report_template directory to customize the generated report or to add new sections with your own data. Variables are rendered using the get_report_html() function in `report.py`.
