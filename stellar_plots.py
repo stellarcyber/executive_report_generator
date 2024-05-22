@@ -1,8 +1,9 @@
 import os
 import numpy as np
+import pandas as pd
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-
+import plotly.express as px
 
 
 class StellarCyberPlots():
@@ -18,7 +19,8 @@ class StellarCyberPlots():
             "volume_assets_line_graph",
             "volume_category_trends",
             "top_data_sources_volume",
-            "all_data_sources_volume_sankey"
+            "all_data_sources_volume_sankey",
+            "volume_pie_chart"
         ]}
     
     def save_figures(self, dst_folder):
@@ -266,7 +268,11 @@ class StellarCyberPlots():
               yaxis=dict(showgrid=False, title_text='Data Volume (GB)', title_font = {"size": 16}),
               plot_bgcolor='rgba(0,0,0,0)'
           )
-        
+      elif fig_name == 'volume_pie_chart':
+        categories_sorted, data_sources_sorted, volume_sorted = sc_stats.combine_data_sources()
+        df = pd.DataFrame({'Volume': volume_sorted[:10], 'Data Source': data_sources_sorted[:10]})
+        fig = px.pie(df, values='Volume', names='Data Source', color_discrete_sequence=px.colors.sequential.RdBu)
+         
       elif fig_name == "top_data_sources_volume":
 
         # Merge all data sources into a single dict
@@ -294,7 +300,6 @@ class StellarCyberPlots():
               yaxis=dict(showgrid=False, title_text='Data Volume (GB)', title_font = {"size": 16}),
               plot_bgcolor='rgba(0,0,0,0)'
           )
-
       elif fig_name == "all_data_sources_volume_sankey":
 
         categories_sorted, data_sources_sorted, volume_sorted = sc_stats.combine_data_sources()

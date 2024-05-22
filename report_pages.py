@@ -3,6 +3,7 @@ import streamlit as st
 from numerize import numerize
 from utils import humansize
 
+
 def stats_page(fn):
     def wrapper():
         if 'sc_stats' not in st.session_state:
@@ -25,7 +26,7 @@ def show_deployment_summary():
     st.subheader("Detections")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(":orange[Critical Incidents Detected]", numerize.numerize(sc_stats.incident_stats['cumulative_critical_incident_count'],2))
+        st.metric(":orange[Critical Cases Detected]", numerize.numerize(sc_stats.incident_stats['cumulative_critical_incident_count'],2))
     with col2:
         st.metric(":orange[Critical Alerts Detected]", numerize.numerize(sc_stats.alert_stats['cumulative_critical_alert_count'],2))
     with col3:
@@ -50,13 +51,13 @@ def show_deployment_summary():
 
 @stats_page
 def show_incidents_stats():
-    st.caption("An Incident is a single attack story, correlating multiple likely related alerts and observables together from every data source. Stellar Cyber uses Machine Learning to perform correlation and security analysts can further edit or build custom Incidents. A Critical Incident represents very high risk connected behaviors and is defined as a risk score >= 75 in Stellar Cyber.")
+    st.caption("A Case is a single attack story, correlating multiple likely related alerts and observables together from every data source. Stellar Cyber uses Machine Learning to perform correlation and security analysts can further edit or build custom Cases. A Critical Case represents very high risk connected behaviors and is defined as a risk score >= 75 in Stellar Cyber.")
     incident_stats = st.session_state.sc_stats.incident_stats
 
-    st.subheader("Critical Incidents Over Time")
+    st.subheader("Critical Cases Over Time")
     st.line_chart(pd.DataFrame(incident_stats["critical_count_per_day"]), x="date", y="count")
     
-    st.subheader("Top 3 Incidents by Risk Score")
+    st.subheader("Top 3 Cases by Risk Score")
     top_incidents = incident_stats['top_3_incidents']
     top_incidents = pd.DataFrame(top_incidents).rename(columns={'created_at': "Start", "name": "Title", "incident_score": "Score"}) #.iloc[:,[1,0,2]]
     st.markdown(top_incidents.style.hide(axis="index").to_html(), unsafe_allow_html=True)

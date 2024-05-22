@@ -1,20 +1,52 @@
 import datetime
+import pandas as pd
 
 
-def incident_stats(api, start_date, end_date, daily_date_scale, tenant=None, org_id=None):
+COLUMNS = ['_id', 'created_at', 'name', 'tags', 'priority', 'incident_score', 'assignee_name']
+
+def get_incidents(api, start, end):
+    response = api.rest_search(
+        'v1/incidents', 
+        {
+            'FROM~created_at': int(start.timestamp()*1000),
+            'TO~created_at': int(end.timestamp()*1000),
+            'FROM~incident_score': 50,
+        }
+    )
+    df = pd.DataFrame(
+        columns=COLUMNS, 
+        data=[[i[c] for c in COLUMNS] for i in response['data']['incidents']]
+    )
+    df['Date'] = df.created_at.astype('datetime64[ms]').dt.date
+    df['Is_Critical'] = df.incident_score >= 75
+    return df
+
+
+def get_case_summaries(api, incidents_df):
+    case_summaries = []
+    for case_id in incidents_df._id.values:
+        response = api.rest_search(f'v1/cases/{case_id}/summary', {'formatted': True})
+        case_summaries.append(response.get('data', ''))
+    incidents_df['summary'] = case_summaries
+    return incidents_df
+
+    
+def get_incident_stats(api, daily_date_scale, tenant):
     """
     Critical incidents per day, total critical incidents, top 3 incidents by risk score
     """
   
-    incident_stats = {'critical_count_per_day': {'date': [], 'count': []},
-          'top_3_incidents': [], 'cumulative_critical_incident_count': 0}
+    incident_stats = {
+        'critical_count_per_day': {'date': [], 'count': []},
+        'high_count_per_day': {'date': [], 'count': []},
+        'top_3_incidents': [],
+        'cumulative_critical_incident_count': 0
+    }
 
-    # Get tenant ID from tenant name
     if tenant:
-        tenant_id = api.tenant_info[tenant].get("cust_id")
+        cust_id = api.tenant_info[tenant].get("cust_id")
 
-
-    # Since no API aggregations are possible, iterate through each date to get the critical count
+    daily_dfs = []
     for d in daily_date_scale:
         query_date_start = datetime.datetime.strptime(d, "%Y-%m-%d")
         query_date_end = query_date_start + datetime.timedelta(days=1, milliseconds=-1)
@@ -25,13 +57,31 @@ def incident_stats(api, start_date, end_date, daily_date_scale, tenant=None, org
           'limit': 1,
           'FROM~incident_score': 75
         }
-
         if tenant:
-            query_params['cust_id'] = tenant_id
+            query_params['cust_id'] = cust_id
 
-        day_count_response = api.rest_search('v1/incidents', query_params)
+        response = api.rest_search('v1/incidents', query_params)
+
         incident_stats['critical_count_per_day']['date'].append(d)
-        incident_stats['critical_count_per_day']['count'].append(day_count_response['data']['total'])
+        incident_stats['critical_count_per_day']['count'].append(response['data']['total'])
+
+        query_params = {
+          'FROM~created_at': int(query_date_start.timestamp()*1000),
+          'TO~created_at': int(query_date_end.timestamp()*1000),
+          'limit': 1,
+          'FROM~incident_score': 50,
+          'TO~incident_score': 74.99999
+        }
+        if tenant:
+            query_params['cust_id'] = cust_id
+
+        response = api.rest_search('v1/incidents', query_params)
+        
+        incident_stats['high_count_per_day']['date'].append(d)
+        incident_stats['high_count_per_day']['count'].append(response['data']['total'])
+
+        daily_dfs.append(get_incidents(api, query_date_start, query_date_end))
+    
 
     # Top 3 by risk
     query_date_start = datetime.datetime.strptime(daily_date_scale[0], "%Y-%m-%d")
@@ -47,9 +97,10 @@ def incident_stats(api, start_date, end_date, daily_date_scale, tenant=None, org
     }
 
     if tenant:
-        query_params['cust_id'] = tenant_id
+        query_params['cust_id'] = cust_id
 
     top_response = api.rest_search('v1/incidents', query_params)
+    # print(json.dumps(top_response, indent=3))
     for i in top_response['data']['incidents']:
         incident_stats['top_3_incidents'].append({
             'created_at': datetime.datetime.fromtimestamp(i['created_at']//1000).strftime('%c'),
@@ -59,4 +110,15 @@ def incident_stats(api, start_date, end_date, daily_date_scale, tenant=None, org
         })
 
     incident_stats['cumulative_critical_incident_count'] = sum(incident_stats['critical_count_per_day']['count'])
+    # print(json.dumps(incident_stats, indent=3))
+
+    df = pd.concat(daily_dfs)
+    # df = get_case_summaries(api, df)
+    incident_stats['incidents_df'] = df
+    incident_stats['high_incident_count'] = sum(incident_stats['high_count_per_day']['count'])
+    # top3 = df.sort_values(by='incident_score', ascending=False).iloc[:3][['created_at', 'name', 'summary', 'incident_score']]
+
     return incident_stats
+
+
+

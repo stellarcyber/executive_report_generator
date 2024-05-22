@@ -1,7 +1,6 @@
 from datetime import datetime
 import numpy as np
 import pandas as pd
-from stellar_api import StellarCyberAPI
 from stats.volume_stats import volume_stats
 from stats.asset_stats import asset_stats
 from stats.connector_stats import connector_stats
@@ -15,9 +14,9 @@ from stats.alert_stage_stats import alert_stage_stats
 from stats.alert_tactic_stats import alert_tactic_stats
 from stats.alert_geo_stats import alert_geo_stats
 from stats.top_assets_stats import top_assets_stats
-from stats.incident_stats import incident_stats
+from stats.incident_stats import get_incident_stats
 import streamlit as st
-
+import traceback
 
 
 class StellarCyberStats():
@@ -35,8 +34,10 @@ class StellarCyberStats():
         self.query_timestamp = datetime.now()
         try:
             self.query_stats(tenant, start_date, end_date, org_id)
-        except:
+        except Exception as e:
             st.error("Unable to retrieve all statistics for this deployment.")
+            print(e)
+            print(traceback.format_exc())
 
     def query_stats(self, tenant, start_date, end_date, org_id=None):
         self.volume_stats = volume_stats(self.api, start_date, end_date, self.daily_date_scale, tenant, org_id)
@@ -52,7 +53,7 @@ class StellarCyberStats():
         self.alert_tactic_stats = alert_tactic_stats(self.api, start_date, end_date, tenant, org_id)
         self.alert_geo_stats = alert_geo_stats(self.api, start_date, end_date, tenant, org_id)
         self.top_assets_stats = top_assets_stats(self.api, start_date, end_date, tenant, org_id)
-        self.incident_stats = incident_stats(self.api, start_date, end_date, self.daily_date_scale, tenant, org_id)
+        self.incident_stats = get_incident_stats(self.api, self.daily_date_scale, tenant)
 
     def list_stats(self):
         return {
