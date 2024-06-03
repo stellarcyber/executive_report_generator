@@ -15,8 +15,8 @@
         <addressdisplay>
           <div><b><a href="https://stellarcyber.ai">stellarcyber.ai</a></b></div>
           <div>Stellar Cyber Headquarters</div>
-          <div>2590 N. 1st Street, Suite 360</div>
-          <div>San Jose, CA 95131</div>
+          <div>4701 Patrick Henry Drive, Building 12</div>
+          <div>Santa Clara, CA 95054</div>
         </addressdisplay>
         <periodrange>
           <div><b>Report prepared for period:</b></div>
@@ -43,12 +43,8 @@
             <p>Critical Cases Detected</p>
           </stat>
           <stat>
-            <h3>{{ critical_alert_count }}</h3>
-            <p>Critical Alerts Detected</p>
-          </stat>
-          <stat>
-            <h3>{{ distinct_alert_types }}</h3>
-            <p>Distinct Alert Types Triggered</p>
+            <h3>{{ high_incident_count }}</h3>
+            <p>High Severity Cases</p>
           </stat>
         </statrow>
       </section>
@@ -84,15 +80,19 @@
           </stat>
         </statrow>
       </section>
+      <section>
+        <h3>Top 20 Data Sources By Cumulative Volume</h3>
+        <img src="plots/all_data_sources_volume_sankey.svg">
+      </section>
 
     </article>
 
-    <article id="cases">
+    <article id="incidents">
       <h2 id="columns-title">Cases</h2>
 
       <section>
         <p>
-          A Case is a single attack story, correlating multiple likely
+          An Case is a single attack story, correlating multiple likely
           related alerts and observables together from every data source. Stellar Cyber uses Machine
           Learning to perform correlation and security analysts can further edit
           or build custom Cases. A Critical Case represents very high
@@ -122,7 +122,7 @@
               <td>{{ i["name"] }}</td>
               <td>{{ i["created_at"] }}</td>
               <td style="width: 40px;">{{ i["incident_score"] }}</td>
-              <td style="width: 300px;">{{ i["description"] }}</td>
+              <td style="width: 300px;">{{ i["summary"] }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -149,11 +149,6 @@
       </section>
 
       <section>
-        <h3>Alerts Over Time</h3>
-        <img src="plots/alert_line_graph.svg">
-      </section>
-
-      <section>
         <img src="plots/stage_heatmap.svg">
       </section>
 
@@ -171,72 +166,8 @@
         <img src="plots/alert_map.svg">
       </section>
 
-      <section>
-        <h3>Top 3 Alerts By Risk Score</h3>
-        <table class="styled-table">
-          <thead>
-              <tr>
-                  <th>Title</th>
-                  <th style="width: 60px;">Datetime</th>
-                  <th style="width: 40px;">Score</th>
-                  <th>Kill Chain Mapping</th>
-                  <th style="width: 200px;">Description</th>
-              </tr>
-          </thead>
-          <tbody>
-              {% for a in top_alerts %}
-              <tr>
-                  <td>{{ a["xdr_event.display_name"] }}</td>
-                  <td style="width: 60px;">{{ a["datetime"] }}</td>
-                  <td style="width: 40px;">{{ a["event_score"] }}</td>
-                  <td>{{ a["killchain_overview_print"] }}</td>
-                  <td style="width: 200px;">{{ a["xdr_event.description"] }}</td>
-              </tr>
-              {% endfor %}
-          </tbody>
-        </table>
-      </section>
-
     </article>
 
-    <article id="assets">
-      <h2 id="columns-title">Assets</h2>
-
-      <section>
-        <p>
-          Assets are continuously discovered and resolved across every data source
-          in Stellar Cyber. Vulnerabilities, alerts, and other activity are
-          used together to produce a risk score for providing context in investigations.
-        </p>
-      </section>
-
-      <section>
-        <h3>Top 5 Assets By Risk Score</h3>
-        <table class="styled-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th style="width: 40px;">Risk Score</th>
-              <th>Location</th>
-              <th>IPs</th>
-              <th style="width: 120px;">Data Sources</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for a in top_assets %}
-            <tr>
-              <td>{{ a["name"] }}</td>
-              <td style="width: 40px;">{{ a["risk_score"] }}</td>
-              <td>{{ a["location"] }}</td>
-              <td>{{ a["ips"] }}</td>
-              <td style="width: 120px;">{{ a["data_sources"] }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </section>
-
-    </article>
 
     <article id="visibility">
       <h2 id="columns-title">Visibility</h2>
@@ -253,18 +184,12 @@
 
       <section>
         <h3>Visibility Over Time</h3>
-        <img src="plots/volume_assets_line_graph.svg">
         <img src="plots/volume_category_trends.svg">
       </section>
 
       <section>
         <h3>Top 10 Data Sources By Cumulative Volume</h3>
-        <img src="plots/top_data_sources_volume.svg">
-      </section>
-
-      <section>
-        <h3>Top 20 Data Sources By Cumulative Volume</h3>
-        <img src="plots/all_data_sources_volume_sankey.svg">
+        <img src="plots/volume_pie_chart.svg">
       </section>
 
     </article>

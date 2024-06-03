@@ -6,3 +6,5 @@ logs/
 .requests_cache.sqlite
 .DS_Store
 __pycache__
+reports_generated/
+.config

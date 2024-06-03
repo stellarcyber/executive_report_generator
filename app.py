@@ -1,21 +1,13 @@
 from datetime import datetime, timedelta
-from os import mkdir, path
+from os import path, listdir
 from glob import glob
 import pickle
-from shutil import copytree
 import streamlit as st
-import weasyprint
 import webbrowser
 from stellar_api import StellarCyberAPI
-from stellar_stats import StellarCyberStats
 from stellar_plots import StellarCyberPlots
-from utils import get_report_html
 from report_pages import *
-
-
-REPORT_TEMPLATE_DIR = __file__.replace("app.py", "report_template")
-REPORT_DIR = __file__.replace("app.py", "reports_generated")
-
+from report import REPORT_DIR, REPORT_TEMPLATE_DIR, run_report
 
 
 def load_config():
@@ -40,47 +32,22 @@ def show_status_caption():
         )
 
 
-def run_report(tenant, start, end):
-    report_dir = path.join(REPORT_DIR, f"{tenant}_{start.replace('-','')}-{end.replace('-','')}")
-    template_dir = path.join(report_dir, "report_template")
-    plots_dir = path.join(template_dir, "plots")
-    html_filename = path.join(template_dir, "report.html")
-    saved_stats_filename = path.join(report_dir, ".saved")
-    pdf_filename = path.join(report_dir, f"{tenant} Executive Report.pdf")
-
-    if not path.exists(REPORT_DIR):
-        mkdir(REPORT_DIR)
-
-    if path.exists(report_dir):
-        st.error(f"Report already exists: {tenant}_{start.replace('-','')}-{end.replace('-','')}")
-        return
-
-    mkdir(report_dir)
-    copytree(REPORT_TEMPLATE_DIR, template_dir)
-
-    with st.spinner(f"Retrieving Data for {tenant}"):
-        sc_stats = StellarCyberStats(st.session_state.api, tenant, start, end, "")
-
-    with open(saved_stats_filename, "wb") as f:
-        pickle.dump(sc_stats, f)
-
-    sc_plots = StellarCyberPlots(sc_stats)
-    sc_plots.save_figures(plots_dir)
-
-    report_html = get_report_html(REPORT_TEMPLATE_DIR, sc_stats, tenant, start, end)
-    with open(html_filename, 'w') as fd:
-        fd.write(report_html)
-    
-    weasyprint.HTML(html_filename).write_pdf(pdf_filename)                    
-
-    st.session_state.sc_stats = sc_stats
-    st.session_state.sc_plots = sc_plots
-
-
 def show_config_form():
-    st.subheader("API Authentication")
-    if st.button("Load Saved Config", help="Loads the previously saved credentials"):
-        load_config()
+    st.subheader("API Authentication", divider='gray')
+    # if st.button("Load Saved Config", help="Loads the previously saved credentials"):
+    #     load_config()
+
+    config_dir = __file__.replace("app.py", ".config")
+    saved_configs = listdir(config_dir)
+
+    selected_config = st.radio("Saved Configurations", saved_configs)
+
+    with open(path.join(config_dir, selected_config), "rb") as f:
+        conf_dict = pickle.load(f)
+    for var in ["host", "user", "api_key", "deployment_type"]:
+        st.session_state[var] = conf_dict[var]
+
+
     host = st.text_input(
         "Instance URL",
         key="host",
@@ -138,22 +105,27 @@ def show_query_form():
     except:
         st.error("Failed to retrieve tenants")
         tenants = ["All Tenants"]
+    
+    template_files = [f for f in listdir(REPORT_TEMPLATE_DIR) if f.endswith(".html.template")]
+    selected_template = st.selectbox("HTML Template", template_files)
 
     if st.button(f"Run Report{'s' if len(tenants) > 1 else ''}"):
         for tenant in tenants:
-            run_report(tenant, str(timeframe[0]), str(timeframe[1]))
+            with st.spinner(f"Retrieving Data for {tenant}"):
+                sc_stats, sc_plots = run_report(st.session_state.api, tenant, str(timeframe[0]), str(timeframe[1]), template=selected_template)
+                st.session_state.sc_stats = sc_stats
+                st.session_state.sc_plots = sc_plots
 
 
 def show_sidebar():
-    st.header("Stellar Cyber Report Generator", divider="orange")
     
-    st.subheader("Run New Report", divider="gray")
+    st.subheader("Run New Report", divider="green")
     with st.expander("Not Configured" if 'api' not in st.session_state else ":white_check_mark: Configured"):
         show_config_form()
     if 'api' in st.session_state:
         show_query_form()
     
-    st.subheader("Open Existing Report", divider="gray")
+    st.subheader("Open Existing Report", divider="green")
 
     pdf_files = list(glob(REPORT_DIR + "/*/*.pdf", recursive=True))
     folder_file_map = {f.split("/")[-2]: f for f in pdf_files}
@@ -178,7 +150,7 @@ def run_app():
     show_status_caption()
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["Deployment Summary", "Incidents", "Alerts", "Assets", "Visibility"]
+        ["Deployment Summary", "Cases", "Alerts", "Assets", "Visibility"]
     )
 
     with tab1:
