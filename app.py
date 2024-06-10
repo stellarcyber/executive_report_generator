@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from os import path, listdir
+from os import path, listdir, mkdir
 from glob import glob
 import pickle
 import streamlit as st
@@ -38,14 +38,16 @@ def show_config_form():
     #     load_config()
 
     config_dir = __file__.replace("app.py", ".config")
+    if not path.exists(config_dir):
+        mkdir(config_dir)
+
     saved_configs = listdir(config_dir)
-
     selected_config = st.radio("Saved Configurations", saved_configs)
-
-    with open(path.join(config_dir, selected_config), "rb") as f:
-        conf_dict = pickle.load(f)
-    for var in ["host", "user", "api_key", "deployment_type"]:
-        st.session_state[var] = conf_dict[var]
+    if selected_config:
+        with open(path.join(config_dir, selected_config), "rb") as f:
+            conf_dict = pickle.load(f)
+        for var in ["host", "user", "api_key", "deployment_type"]:
+            st.session_state[var] = conf_dict[var]
 
 
     host = st.text_input(
