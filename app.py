@@ -136,8 +136,15 @@ def show_sidebar():
     if selected_folder:
         load_saved_data(path.join(REPORT_DIR, selected_folder, ".saved"))
 
-        if st.button("Open PDF"):
-            webbrowser.open_new_tab("file://" + folder_file_map[selected_folder])
+        with open(folder_file_map[selected_folder], "rb") as file:
+            btn = st.download_button(
+                    label="Download PDF",
+                    data=file,
+                    file_name=f"{selected_folder}.pdf",
+                    mime="application/pdf"
+                  )
+        # if st.button("Open PDF"):
+        #     webbrowser.open_new_tab("file://" + folder_file_map[selected_folder])
 
 
 
