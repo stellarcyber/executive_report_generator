@@ -64,10 +64,12 @@ def asset_stats(api, start_date, end_date, daily_date_scale, tenant=None, org_id
         }
 
         response = api.es_search(index, query)
-        for b in response['aggregations']['date']['buckets']:
+        # for b in response['aggregations']['date']['buckets']:
+        for b in response.get('aggregations', {}).get('date', {}).get('buckets', {}):
           asset_stats['assets_per_day']['date'].append(b['key_as_string'][0:10])
           asset_stats['assets_per_day']['count'].append(b['asset_count']['value'])
 
-    asset_stats['average_daily_assets'] = statistics.fmean(asset_stats['assets_per_day']['count'])
+    if asset_stats['assets_per_day']['count']:
+        asset_stats['average_daily_assets'] = statistics.fmean(asset_stats['assets_per_day']['count'])
     print("ASSET:", asset_stats)
     return asset_stats
