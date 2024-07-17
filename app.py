@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from os import path, listdir, mkdir
+import sys
 from glob import glob
 import pickle
 import streamlit as st
@@ -37,7 +38,8 @@ def show_config_form():
     # if st.button("Load Saved Config", help="Loads the previously saved credentials"):
     #     load_config()
 
-    config_dir = __file__.replace("app.py", ".config")
+    # config_dir = __file__.replace("app.py", ".config")
+    config_dir = "{}/{}".format(path.dirname(path.realpath(sys.argv[0])), ".config")
     if not path.exists(config_dir):
         mkdir(config_dir)
 
@@ -78,7 +80,10 @@ def show_config_form():
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Save and Connect"):
-            with open(".saved", "wb") as f:
+            file_name = host.replace("https://",'')
+            config_path = "{}/{}".format(config_dir, file_name)
+            with open(config_path, "wb") as f:
+            # with open(".saved", "wb") as f:
                 pickle.dump({"host": host, "user": user, "api_key": api_key, "deployment_type": deployment_type}, f)
 
             st.session_state.api = StellarCyberAPI(
