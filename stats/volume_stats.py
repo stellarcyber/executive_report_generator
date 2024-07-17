@@ -67,13 +67,15 @@ def volume_stats(api, start_date, end_date, daily_date_scale, tenant=None, org_i
         }
 
         response = api.es_search(index, query)
-        for b in response['aggregations']['date']['buckets']:
+        # for b in response['aggregations']['date']['buckets']:
+        for b in response.get('aggregations', {}).get('date', {}).get('buckets', {}):
           volume_stats['volume_per_day']['date'].append(b['key_as_string'][0:10])
           if b['volume']['value']:
             volume_stats['volume_per_day']['volume'].append(b['volume']['value']*1000*1000*1000)  # Represent in byte
           else:
             volume_stats['volume_per_day']['volume'].append(0)
 
-    volume_stats['average_daily_volume'] = statistics.fmean(volume_stats['volume_per_day']['volume'])
+    if volume_stats['volume_per_day']['volume']:
+        volume_stats['average_daily_volume'] = statistics.fmean(volume_stats['volume_per_day']['volume'])
     print("VOLUME:", volume_stats)
     return volume_stats
