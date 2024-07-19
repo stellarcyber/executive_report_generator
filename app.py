@@ -33,29 +33,68 @@ def show_status_caption():
         )
 
 
-def show_config_form():
-    st.subheader("API Authentication", divider='gray')
-    # if st.button("Load Saved Config", help="Loads the previously saved credentials"):
-    #     load_config()
+def save_config():
+    stss = st.session_state
+    file_name = stss.host.replace("https://", '')
+    config_path = "{}/{}".format(get_config_directory(), file_name)
+    with open(config_path, "wb") as f:
+        # with open(".saved", "wb") as f:
+        pickle.dump({"host": stss.host, "user": stss.user, "api_key": stss.api_key, "deployment_type": stss.deployment_type}, f)
 
-    # config_dir = __file__.replace("app.py", ".config")
-    config_dir = "{}/{}".format(path.dirname(path.realpath(sys.argv[0])), ".config")
-    if not path.exists(config_dir):
-        mkdir(config_dir)
+    st.session_state.api = StellarCyberAPI(
+        url=stss.host,
+        username=stss.user,
+        api_key=stss.api_key,
+        deployment=stss.deployment_type
+    )
+    stss['last_config'] = file_name
 
-    saved_configs = listdir(config_dir)
-    selected_config = st.radio("Saved Configurations", saved_configs)
+
+def load_config():
+    selected_config = st.session_state.config_list
     if selected_config:
-        with open(path.join(config_dir, selected_config), "rb") as f:
+        st.session_state['last_config'] = selected_config
+        with open(path.join(get_config_directory(), selected_config), "rb") as f:
             conf_dict = pickle.load(f)
         for var in ["host", "user", "api_key", "deployment_type"]:
             st.session_state[var] = conf_dict[var]
 
+def get_configs():
+    saved_configs = []
+    config_dir = get_config_directory()
+    if not path.exists(config_dir):
+        mkdir(config_dir)
+    saved_configs = listdir(config_dir)
+    return saved_configs
+
+def get_config_directory():
+    config_dir = "{}/{}".format(path.dirname(path.realpath(sys.argv[0])), ".config")
+    return config_dir
+
+def get_list_index(list_to_search :list, value_to_find=''):
+    index_value = None
+    try:
+        if value_to_find:
+            index_value = list_to_search.index(value_to_find)
+    except Exception as e:
+        pass
+    return index_value
+
+
+def show_config_form():
+
+    st.subheader("API Authentication", divider='gray')
+
+    config_list = get_configs()
+    last_config = st.session_state.get('last_config')
+    list_index = get_list_index(config_list, last_config)
+    print(list_index)
+    st.selectbox("Saved Configurations", config_list, on_change=load_config, key="config_list", index=list_index, placeholder="Choose a config to load")
 
     host = st.text_input(
         "Instance URL",
         key="host",
-        placeholder="https://salesdemo.stellarcyber.ai"
+        placeholder="https://salesdemo.stellarcyber.ai",
     )
     user = st.text_input(
         "Stellar Cyber User",
@@ -79,19 +118,7 @@ def show_config_form():
     )
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Save and Connect"):
-            file_name = host.replace("https://",'')
-            config_path = "{}/{}".format(config_dir, file_name)
-            with open(config_path, "wb") as f:
-            # with open(".saved", "wb") as f:
-                pickle.dump({"host": host, "user": user, "api_key": api_key, "deployment_type": deployment_type}, f)
-
-            st.session_state.api = StellarCyberAPI(
-                url=st.session_state.host, 
-                username=st.session_state.user, 
-                api_key=st.session_state.api_key, 
-                deployment=st.session_state.deployment_type
-            )
+        st.button("Save and Connect", on_click=save_config)
     with col2:
         st.write("Not Connected" if 'api' not in st.session_state else ":white_check_mark: Connected")
 
@@ -148,15 +175,14 @@ def show_sidebar():
                     file_name=f"{selected_folder}.pdf",
                     mime="application/pdf"
                   )
-        # if st.button("Open PDF"):
-        #     webbrowser.open_new_tab("file://" + folder_file_map[selected_folder])
-
 
 
 def run_app():
+
     st.set_page_config(
         page_title="Stellar Cyber Executive Reporting App", layout="wide", initial_sidebar_state="expanded"
     )
+
     with st.sidebar:
         show_sidebar()
 
