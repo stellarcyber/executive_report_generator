@@ -8,3 +8,4 @@ logs/
 __pycache__
 reports_generated/
 .config
+venv/
