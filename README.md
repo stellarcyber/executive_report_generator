@@ -38,3 +38,21 @@ This is a Python Streamlit app using the Stellar Cyber Public API to generate ex
 The `report_template` directory contains:
 - `report-cover.jpg` -- image file used for the report cover. Replace this file with your own image/logo to customize the cover page of the report pdf.
 - `report.html.template` -- HTML template file for the report. Copy/paste into a new .html.template file in the report_template directory to customize the generated report or to add new sections with your own data. Variables are rendered using the get_report_html() function in `report.py`.
+
+> [!NOTE]
+> 1. On MacOS you might need to install weasyprint manually and update the path to the dynamic library
+> `brew install weasyprint`
+>  and `export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_FALLBACK_LIBRARY_PATH`
+> 2. Add the command to your shell configuration file to make it persistent across terminal sessions. Depending on your shell, you will need to add the line to one of the following files:
+> 3. Edit .zshrc file, if it doesn't exist, you can create it. Here's how you can do it:
+> 4. Create the .zshrc File: Open the terminal and use a text editor to create the file. You can use nano, which is a simple text editor.
+> `nano ~/.zshrc`
+> 5. Add the Export Command: Once the file is open in nano, add the line:
+> `export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_FALLBACK_LIBRARY_PATH`
+> 6. Save and Exit:
+> To save the file, press `CTRL + O` (write out).
+> Press Enter to confirm the filename.
+> To exit nano, press `CTRL + X`.
+> 7. Apply the Changes: After creating and editing the .zshrc file, apply the changes by sourcing the file:
+> `source ~/.zshrc`
+> This will set the DYLD_FALLBACK_LIBRARY_PATH environment variable permanently for all future terminal sessions using zsh.
