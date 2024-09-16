@@ -4,6 +4,8 @@ This is a Python Streamlit app using the Stellar Cyber Public API to generate ex
 
 ## Getting Started
 
+### With Python
+
 1. Clone the repository: `git clone https://github.com/stellarcyber/executive_report_generator.git`
 2. Go to the cloned directory: `cd executive_report_generator`
 3. Install the dependencies: `pip install -r requirements.txt`  or `pip3 install -r requirements.txt`
@@ -14,6 +16,18 @@ This is a Python Streamlit app using the Stellar Cyber Public API to generate ex
 > [!NOTE]
 > To make sure you can run `streamlit`, make sure your python bin directory is added to your `PATH`. Alternatively you can use the absolute path to `streamlit` to run it.
 > Tested with Python 3.10+
+
+### With Docker
+
+> [!NOTE]
+> To simply launch premade image
+1. Launch the Docker container: `docker run -p 8501:8501 ghcr.io/stellarcyber/executive_report_generator/executive_report_generator:latest`
+   
+> [!NOTE]
+> To build image locally
+
+1. Build the Docker image: `docker build -t executive_report_generator .`
+2. Launch the Docker container: `docker run -p 8501:8501 executive_report_generator`
 
 ## Project Structure
 
@@ -29,9 +43,16 @@ This is a Python Streamlit app using the Stellar Cyber Public API to generate ex
 
 ## Usage
 
+### Directly with python
+
 1. Run the app: `streamlit run app.py`
 2. Follow the instructions on the app to use it.
 3. To stop the app: `CTRL-C`
+
+### With Docker
+1. Launch the Docker container: `docker run -p 8501:8501 executive_report_generator` or `docker run -p 8501:8501 ghcr.io/stellarcyber/executive_report_generator/executive_report_generator:latest`
+2. To stop the app: `CTRL-C`
+
 
 ## Customization
 
