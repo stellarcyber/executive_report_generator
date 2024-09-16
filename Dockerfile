@@ -14,7 +14,7 @@ WORKDIR /app
 COPY ./requirements.txt /app/requirements.txt
 
 # Install python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # Set environment variables
 ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
