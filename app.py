@@ -4,7 +4,6 @@ import sys
 from glob import glob
 import pickle
 import streamlit as st
-import webbrowser
 from stellar_api import StellarCyberAPI
 from stellar_plots import StellarCyberPlots
 from report_pages import *
@@ -88,7 +87,7 @@ def show_config_form():
     config_list = get_configs()
     last_config = st.session_state.get('last_config')
     list_index = get_list_index(config_list, last_config)
-    print(list_index)
+
     st.selectbox("Saved Configurations", config_list, on_change=load_config, key="config_list", index=list_index, placeholder="Choose a config to load")
 
     host = st.text_input(
