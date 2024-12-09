@@ -27,21 +27,20 @@ class StellarCyberAPI():
             "Content-Type": "application/x-www-form-urlencoded",
         }
         req = url + "/connect/api/v1/access_token"
-        print(req)
-        print(headers)
         res = requests.post(req, headers=headers, verify=False)
-        print("get access token res:", res.status_code)
         return res.json()["access_token"]
 
     def gen_auth(self, url, username, api_key, deployment):
-        if deployment == "On-Prem":
-            auth = base64.b64encode(bytes(username + ":" + api_key, "utf-8")).decode("utf-8")
-            return "Basic " + auth
-        elif deployment == "SaaS":
-            token = self.getAccessToken(url, username, api_key)
-            return "Bearer " + token
-        else:
-            raise Exception("unknown deployment: " + deployment)
+        # if deployment == "On-Prem":
+        #     auth = base64.b64encode(bytes(username + ":" + api_key, "utf-8")).decode("utf-8")
+        #     return "Basic " + auth
+        # elif deployment == "SaaS":
+        #     token = self.getAccessToken(url, username, api_key)
+        #     return "Bearer " + token
+        # else:
+        #     raise Exception("unknown deployment: " + deployment)
+        token = self.getAccessToken(url, username, api_key)
+        return "Bearer " + token
 
     def es_search(self, index, query):
         api_url = f"{self.api_baseurl}/data/{index}/_search"
