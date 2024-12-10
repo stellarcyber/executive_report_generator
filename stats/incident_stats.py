@@ -121,7 +121,7 @@ def get_incident_stats(api, daily_date_scale, tenant):
 
     except Exception as e:
         print("exception {}".format(e))
-        exit(0)
+        # exit(0)
 
     return incident_stats
 
